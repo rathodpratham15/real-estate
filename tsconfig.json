@@ -1,0 +1,28 @@
+{
+  "extends": "@adonisjs/tsconfig/tsconfig.app.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["react"],
+    "rootDir": "./",
+    "outDir": "./build",
+    "baseUrl": ".",
+    "paths": {
+      "#controllers/*": ["./app/controllers/*"],
+      "#models/*": ["./app/models/*"],
+      "#exceptions/*": ["./app/exceptions/*"],
+      "#middleware/*": ["./app/middleware/*"],
+      "#start/*": ["./start/*"],
+      "#config/*": ["./config/*"],
+      "#database/*": ["./database/*"],
+      "@/*": ["./inertia/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "build"
+  ]
+}
