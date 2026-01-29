@@ -3,8 +3,19 @@ import { useEffect, useState } from 'react'
 import Navbar from '@/components/navbar-new'
 import Footer from '@/components/footer-new'
 import { Users, Target, Award, Heart } from 'lucide-react'
+import type { Agent } from '@/lib/real-estate-types'
 
-export default function AboutPage() {
+interface AboutPageProps {
+  agents: Agent[]
+  stats: {
+    happyClients: number
+    propertiesSold: number
+    yearsExperience: number
+    satisfactionRate: number
+  }
+}
+
+export default function AboutPage({ agents, stats }: AboutPageProps) {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -14,35 +25,19 @@ export default function AboutPage() {
     setTimeout(() => setIsVisible(true), 100)
   }, [])
 
-  const stats = [
-    { icon: Users, value: '500+', label: 'Happy Clients' },
-    { icon: Target, value: '1,200+', label: 'Properties Sold' },
-    { icon: Award, value: '15+', label: 'Years Experience' },
-    { icon: Heart, value: '98%', label: 'Satisfaction Rate' },
+  const statsData = [
+    { icon: Users, value: `${stats.happyClients}+`, label: 'Happy Clients' },
+    { icon: Target, value: `${stats.propertiesSold}+`, label: 'Properties Sold' },
+    { icon: Award, value: `${stats.yearsExperience}+`, label: 'Years Experience' },
+    { icon: Heart, value: `${stats.satisfactionRate}%`, label: 'Satisfaction Rate' },
   ]
 
-  const team = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Founder & CEO',
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop',
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Head of Sales',
-      image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop',
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Property Manager',
-      image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop',
-    },
-    {
-      name: 'David Thompson',
-      role: 'Real Estate Agent',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-    },
-  ]
+  // Map agents to team format
+  const team = agents.map((agent) => ({
+    name: `${agent.firstName} ${agent.lastName}`,
+    role: agent.specialties?.[0] || 'Real Estate Agent',
+    image: agent.photo || `https://ui-avatars.com/api/?name=${agent.firstName}+${agent.lastName}&size=400`,
+  }))
 
   return (
     <div className="min-h-screen bg-white">
@@ -110,7 +105,7 @@ export default function AboutPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-20">
-            {stats.map((stat, index) => {
+            {statsData.map((stat, index) => {
               const Icon = stat.icon
               return (
                 <div
@@ -141,25 +136,31 @@ export default function AboutPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member, index) => (
-              <div
-                key={index}
-                className={`group text-center transition-all duration-700 ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                }`}
-                style={{ transitionDelay: `${(index + 6) * 100}ms` }}
-              >
-                <div className="relative overflow-hidden rounded-3xl mb-4 aspect-square">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
+            {team.length > 0 ? (
+              team.map((member, index) => (
+                <div
+                  key={index}
+                  className={`group text-center transition-all duration-700 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                  }`}
+                  style={{ transitionDelay: `${(index + 6) * 100}ms` }}
+                >
+                  <div className="relative overflow-hidden rounded-3xl mb-4 aspect-square">
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold text-black mb-1">{member.name}</h3>
+                  <p className="text-gray-600">{member.role}</p>
                 </div>
-                <h3 className="text-xl font-bold text-black mb-1">{member.name}</h3>
-                <p className="text-gray-600">{member.role}</p>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-600">No team members available at the moment.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>

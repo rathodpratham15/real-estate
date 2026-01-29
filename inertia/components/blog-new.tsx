@@ -124,11 +124,15 @@ export default function Blog({ posts }: BlogProps) {
                   </span>
                   <p className="text-sm text-gray-600">
                     {post.publishedAt
-                      ? new Date(post.publishedAt).toLocaleDateString('en-US', {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })
+                      ? typeof post.publishedAt === 'string'
+                        ? new Date(post.publishedAt).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })
+                        : 'toFormat' in post.publishedAt
+                          ? post.publishedAt.toFormat('MMMM d, yyyy')
+                          : 'Recent'
                       : 'Recent'}
                   </p>
                 </div>

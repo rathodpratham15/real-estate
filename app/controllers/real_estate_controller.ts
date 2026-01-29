@@ -3,6 +3,7 @@ import Property from '#models/property'
 import Agent from '#models/agent'
 import BlogPost from '#models/blog_post'
 import Testimonial from '#models/testimonial'
+import Contact from '#models/contact'
 
 export default class RealEstateController {
   /**
@@ -40,11 +41,11 @@ export default class RealEstateController {
   async listings({ request, inertia }: HttpContext) {
     const page = request.input('page', 1)
     const limit = 12
-    const propertyType = request.input('type', null)
+    const propertyType = request.input('propertyType', null)
     const status = request.input('status', 'for_sale')
     const city = request.input('city', null)
-    const minPrice = request.input('min_price', null)
-    const maxPrice = request.input('max_price', null)
+    const minPrice = request.input('minPrice', null)
+    const maxPrice = request.input('maxPrice', null)
     const bedrooms = request.input('bedrooms', null)
 
     const query = Property.query()
@@ -202,16 +203,62 @@ export default class RealEstateController {
     const agents = await Agent.query()
       .where('is_active', true)
       .orderBy('created_at', 'asc')
-      .limit(6)
+      .limit(4)
 
-    const testimonials = await Testimonial.query()
-      .where('featured', true)
-      .orderBy('order', 'asc')
-      .limit(6)
+    // Calculate stats from database
+    const totalPropertiesSold = await Property.query()
+      .where('status', 'sold')
+      .count('* as total')
+      .first()
+
+    const totalHappyClients = await Testimonial.query()
+      .count('* as total')
+      .first()
+
+    const oldestAgent = await Agent.query()
+      .where('is_active', true)
+      .whereNotNull('years_of_experience')
+      .orderBy('years_of_experience', 'desc')
+      .first()
+
+    const totalProperties = await Property.query()
+      .where('status', 'sold')
+      .count('* as total')
+      .first()
+
+    const totalTestimonials = await Testimonial.query()
+      .count('* as total')
+      .first()
+
+    // Calculate satisfaction rate (assuming it's based on testimonials with rating >= 4)
+    const positiveTestimonials = await Testimonial.query()
+      .whereNotNull('rating')
+      .where('rating', '>=', 4)
+      .count('* as total')
+      .first()
+
+    const allRatedTestimonials = await Testimonial.query()
+      .whereNotNull('rating')
+      .count('* as total')
+      .first()
+
+    const satisfactionRate =
+      allRatedTestimonials && allRatedTestimonials.$extras.total > 0
+        ? Math.round(
+          ((positiveTestimonials?.$extras.total || 0) / allRatedTestimonials.$extras.total) * 100
+        )
+        : 98
+
+    const stats = {
+      happyClients: totalHappyClients?.$extras.total || 500,
+      propertiesSold: totalPropertiesSold?.$extras.total || 1200,
+      yearsExperience: oldestAgent?.yearsOfExperience || 15,
+      satisfactionRate,
+    }
 
     return inertia.render('real-estate/about-new', {
       agents,
-      testimonials,
+      stats,
     })
   }
 
@@ -221,16 +268,26 @@ export default class RealEstateController {
   async contact({ inertia, request, response, session }: HttpContext) {
     if (request.method() === 'POST') {
       // Handle form submission
-      const { name, email, phone, message, agentId } = request.only([
+      const { name, email, phone, subject, message, agentId } = request.only([
         'name',
         'email',
         'phone',
+        'subject',
         'message',
         'agentId',
       ])
 
-      // TODO: Send email or save to database
-      // For now, just flash a success message
+      // Save to database
+      await Contact.create({
+        name,
+        email,
+        phone: phone || null,
+        subject: subject || null,
+        message,
+        agentId: agentId ? parseInt(agentId) : null,
+        status: 'new',
+      })
+
       session.flash('success', 'Thank you for your message! We will get back to you soon.')
 
       return response.redirect().back()

@@ -1,21 +1,27 @@
-import { Head } from '@inertiajs/react'
+import { Head, useForm } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/navbar-new'
 import Footer from '@/components/footer-new'
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
+import type { Agent } from '@/lib/real-estate-types'
 
-export default function ContactPage() {
+interface ContactPageProps {
+    agents: Agent[]
+}
+
+export default function ContactPage({ agents }: ContactPageProps) {
     const [isVisible, setIsVisible] = useState(false)
-    const [formData, setFormData] = useState({
+    const { toast } = useToast()
+    const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
         phone: '',
         subject: '',
         message: '',
+        agentId: '',
     })
-    const { toast } = useToast()
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -24,26 +30,22 @@ export default function ContactPage() {
         setTimeout(() => setIsVisible(true), 100)
     }, [])
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const target = e.target as unknown as { name: string; value: string }
-        setFormData({
-            ...formData,
-            [target.name]: target.value,
-        })
-    }
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        toast({
-            title: 'Message Sent!',
-            description: "We'll get back to you within 24 hours.",
-        })
-        setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            subject: '',
-            message: '',
+        post('/contact', {
+            onSuccess: () => {
+                toast({
+                    title: 'Message Sent!',
+                    description: "We'll get back to you within 24 hours.",
+                })
+                reset()
+            },
+            onError: () => {
+                toast({
+                    title: 'Error',
+                    description: 'There was an error sending your message. Please try again.',
+                })
+            },
         })
     }
 
@@ -149,12 +151,13 @@ export default function ContactPage() {
                                     <input
                                         type="text"
                                         name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
                                         required
                                         className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black transition-colors"
                                         placeholder="John Doe"
                                     />
+                                    {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -165,12 +168,13 @@ export default function ContactPage() {
                                         <input
                                             type="email"
                                             name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
                                             required
                                             className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black transition-colors"
                                             placeholder="john@example.com"
                                         />
+                                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -179,11 +183,12 @@ export default function ContactPage() {
                                         <input
                                             type="tel"
                                             name="phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
+                                            value={data.phone}
+                                            onChange={(e) => setData('phone', e.target.value)}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black transition-colors"
                                             placeholder="+1 (555) 123-4567"
                                         />
+                                        {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
                                     </div>
                                 </div>
 
@@ -194,12 +199,13 @@ export default function ContactPage() {
                                     <input
                                         type="text"
                                         name="subject"
-                                        value={formData.subject}
-                                        onChange={handleChange}
+                                        value={data.subject}
+                                        onChange={(e) => setData('subject', e.target.value)}
                                         required
                                         className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black transition-colors"
                                         placeholder="How can we help?"
                                     />
+                                    {errors.subject && <p className="mt-1 text-sm text-red-600">{errors.subject}</p>}
                                 </div>
 
                                 <div>
@@ -208,21 +214,23 @@ export default function ContactPage() {
                                     </label>
                                     <textarea
                                         name="message"
-                                        value={formData.message}
-                                        onChange={handleChange}
+                                        value={data.message}
+                                        onChange={(e) => setData('message', e.target.value)}
                                         required
                                         rows={6}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black transition-colors resize-none"
                                         placeholder="Tell us more about what you're looking for..."
                                     />
+                                    {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message}</p>}
                                 </div>
 
                                 <Button
                                     type="submit"
-                                    className="w-full py-6 text-base rounded-xl"
+                                    disabled={processing}
+                                    className="w-full py-6 text-base rounded-xl disabled:opacity-50"
                                     style={{ backgroundColor: '#A8D5E2', color: '#1a1a1a' }}
                                 >
-                                    Send Message
+                                    {processing ? 'Sending...' : 'Send Message'}
                                 </Button>
                             </form>
                         </div>

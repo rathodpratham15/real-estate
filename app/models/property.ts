@@ -2,10 +2,19 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Agent from '#models/agent'
+import User from '#models/user'
 
 export default class Property extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
+
+  @column({ columnName: 'user_id' })
+  declare userId: number | null
+
+  @belongsTo(() => User, {
+    foreignKey: 'userId',
+  })
+  declare user: BelongsTo<typeof User>
 
   @column()
   declare title: string

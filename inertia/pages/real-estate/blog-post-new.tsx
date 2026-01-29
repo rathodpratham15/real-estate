@@ -12,13 +12,20 @@ interface BlogPostPageProps {
 }
 
 export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) {
-  const formatDate = (date: string | null) => {
+  const formatDate = (date: string | { toFormat: (format: string) => string } | null) => {
     if (!date) return ''
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
+    if (typeof date === 'string') {
+      return new Date(date).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    }
+    // Handle Luxon DateTime object
+    if (date && typeof date === 'object' && 'toFormat' in date) {
+      return date.toFormat('MMMM d, yyyy')
+    }
+    return ''
   }
 
   return (
@@ -68,7 +75,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
               <div className="flex items-center gap-4 text-gray-600">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  <span>{formatDate(post.publishedAt?.toString() || null)}</span>
+                  <span>{formatDate(post.publishedAt || null)}</span>
                 </div>
                 {post.author && (
                   <>
