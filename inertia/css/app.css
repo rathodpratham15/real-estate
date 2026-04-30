@@ -5,22 +5,32 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
+/* Hide scrollbars while keeping scroll functionality */
+/* For webkit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 0;
+  height: 0;
+  background: transparent;
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
+/* For Firefox */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 5px;
+/* Ensure body and html can still scroll */
+html {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 @layer base {

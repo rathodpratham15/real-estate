@@ -3,7 +3,7 @@ import type { Property } from '@/lib/real-estate-types'
 import PropertyCard from '@/components/property-card'
 import Navbar from '@/components/navbar-new'
 import Footer from '@/components/footer-new'
-import { Bed, Bath, Square, MapPin, Calendar, Phone, Mail } from 'lucide-react'
+import { Bed, Bath, Square, MapPin, Calendar } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface PropertyPageProps {
@@ -14,9 +14,10 @@ interface PropertyPageProps {
 export default function PropertyPage({ property, similarProperties }: PropertyPageProps) {
   const formatPrice = (price: number) => {
     const priceStr = Math.floor(price).toString()
-    if (priceStr.length <= 3) return `$${priceStr}`
-    const formatted = priceStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    return `$${formatted}`
+    if (priceStr.length <= 3) return `₹${priceStr}`
+    // Format: ₹27,00,000 (Indian numbering system)
+    const formatted = priceStr.replace(/\B(?=(\d{2})+(?!\d))/g, ',')
+    return `₹${formatted}`
   }
 
   return (
@@ -29,7 +30,7 @@ export default function PropertyPage({ property, similarProperties }: PropertyPa
         {/* Hero Image */}
         <div className="relative h-[400px] md:h-[500px] bg-gray-200">
           {property.mainImage ? (
-            <img
+            <img loading="lazy" decoding="async"
               src={property.mainImage}
               alt={property.title}
               className="w-full h-full object-cover"
@@ -120,7 +121,7 @@ export default function PropertyPage({ property, similarProperties }: PropertyPa
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {property.images.map((image, index) => (
                       <div key={index} className="relative h-48 bg-gray-200 rounded-3xl overflow-hidden">
-                        <img src={image} alt={`${property.title} - Image ${index + 1}`} className="w-full h-full object-cover" />
+                        <img loading="lazy" decoding="async" src={image} alt={`${property.title} - Image ${index + 1}`} className="w-full h-full object-cover" />
                       </div>
                     ))}
                   </div>
@@ -158,7 +159,7 @@ export default function PropertyPage({ property, similarProperties }: PropertyPa
                   <h3 className="text-xl font-bold mb-4 text-black">Contact Agent</h3>
                   <div className="flex items-center gap-4 mb-4">
                     {property.agent.photo ? (
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={property.agent.photo}
                         alt={`${property.agent.firstName} ${property.agent.lastName}`}
                         className="w-16 h-16 rounded-full object-cover"
@@ -215,7 +216,11 @@ export default function PropertyPage({ property, similarProperties }: PropertyPa
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-black">Type:</span>
-                    <span className="font-medium capitalize text-black">{property.propertyType}</span>
+                    <span className="font-medium capitalize text-black">
+                      {property.propertyType === 'other' && property.propertyTypeOther 
+                        ? property.propertyTypeOther 
+                        : property.propertyType}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-black">Status:</span>

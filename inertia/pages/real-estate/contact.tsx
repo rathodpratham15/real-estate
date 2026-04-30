@@ -199,7 +199,7 @@ export default function ContactPage({ agents }: ContactPageProps) {
                       {agents.slice(0, 3).map((agent) => (
                         <div key={agent.id} className="flex items-center gap-3">
                           {agent.photo ? (
-                            <img
+                            <img loading="lazy" decoding="async"
                               src={agent.photo}
                               alt={`${agent.firstName} ${agent.lastName}`}
                               className="w-12 h-12 rounded-full object-cover"

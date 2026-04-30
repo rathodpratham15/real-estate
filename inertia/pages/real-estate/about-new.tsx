@@ -96,7 +96,7 @@ export default function AboutPage({ agents, stats }: AboutPageProps) {
                 isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
               }`}
             >
-              <img
+              <img loading="lazy" decoding="async"
                 src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop"
                 alt="Our office"
                 className="w-full h-[500px] object-cover"
@@ -146,7 +146,7 @@ export default function AboutPage({ agents, stats }: AboutPageProps) {
                   style={{ transitionDelay: `${(index + 6) * 100}ms` }}
                 >
                   <div className="relative overflow-hidden rounded-3xl mb-4 aspect-square">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={member.image}
                       alt={member.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

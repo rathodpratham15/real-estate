@@ -114,7 +114,7 @@ export default function Features({ features }: FeaturesProps) {
                 }`}
               >
                 {features[activeFeature]?.image ? (
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={features[activeFeature].image}
                     alt={features[activeFeature].title}
                     className="w-full h-full object-cover transition-all duration-500"

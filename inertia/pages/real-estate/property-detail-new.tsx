@@ -1,20 +1,32 @@
-import { Head, Link, useForm } from '@inertiajs/react'
+import { Head, Link, useForm, usePage, router } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
-import type { Property } from '@/lib/real-estate-types'
+import type { Property, Testimonial } from '@/lib/real-estate-types'
 import Navbar from '@/components/navbar-new'
 import Footer from '@/components/footer-new'
-import { Bed, Bath, Maximize, MapPin, ArrowLeft, Calendar, Home, Sparkles } from 'lucide-react'
+import { Bed, Bath, Maximize, MapPin, ArrowLeft, Calendar, Home, Sparkles, CheckCircle2, MessageCircle, Heart, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
+import { createWhatsAppLink } from '@/lib/whatsapp'
 
 interface PropertyDetailPageProps {
     property: Property
     similarProperties?: Property[]
+    propertyTestimonials?: Testimonial[]
+    whatsappNumber?: string
 }
 
-export default function PropertyDetail({ property, similarProperties = [] }: PropertyDetailPageProps) {
+export default function PropertyDetail({
+    property,
+    similarProperties = [],
+    propertyTestimonials = [],
+    whatsappNumber = '+919876543210',
+}: PropertyDetailPageProps) {
     const [isVisible, setIsVisible] = useState(false)
+    const [isFavorited, setIsFavorited] = useState(false)
+    const [favoriteLoading, setFavoriteLoading] = useState(false)
     const { toast } = useToast()
+    const { auth } = usePage().props as any
+    const user = auth?.user
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -31,14 +43,18 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
         setTimeout(() => setIsVisible(true), 100)
         // Pre-fill form with property information
         setData({
-            name: '',
-            email: '',
+            name: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : '',
+            email: user?.email || '',
             phone: '',
             subject: `Inquiry about ${property.title}`,
             message: `I'm interested in learning more about ${property.title} located at ${property.address}.`,
-            agentId: property.agentId?.toString() || '',
         })
-    }, [property])
+
+        // Check favorite status if user is logged in
+        if (user) {
+            checkFavoriteStatus()
+        }
+    }, [property, user])
 
     if (!property) {
         return (
@@ -53,7 +69,7 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
         )
     }
 
-    // Extract highlights from features if available, otherwise use defaults
+    // Extract highlights from features.highlights if available, otherwise use defaults
     const defaultHighlights = [
         'Gourmet kitchen with premium appliances',
         'Master suite with spa-like bathroom',
@@ -64,14 +80,16 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
     ]
 
     const highlights =
-        property.features && Object.keys(property.features).length > 0
-            ? Object.entries(property.features).map(([key, value]) => {
-                if (typeof value === 'boolean' && value) {
-                    return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
-                }
-                return `${key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}: ${value}`
-            })
+        property.features?.highlights && Array.isArray(property.features.highlights) && property.features.highlights.length > 0
+            ? property.features.highlights
             : defaultHighlights
+
+    // Extract property details from features (excluding highlights)
+    const propertyDetailsFromFeatures = property.features
+        ? Object.fromEntries(
+            Object.entries(property.features).filter(([key]) => key !== 'highlights')
+        )
+        : {}
 
     const propertyDetails = {
         description:
@@ -80,15 +98,69 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
         highlights,
         location: property.address || 'Premium Neighborhood, Prime Location',
         yearBuilt: property.yearBuilt?.toString() || '2023',
-        propertyType: property.propertyType || 'Luxury Residence',
-        parking: property.features?.parking || '2-car garage',
+        propertyType: property.propertyType === 'other' && property.propertyTypeOther
+            ? property.propertyTypeOther
+            : property.propertyType || 'Luxury Residence',
+        // Include all property details from features
+        ...propertyDetailsFromFeatures,
+    }
+
+    const checkFavoriteStatus = async () => {
+        if (!user) return
+        try {
+            const response = await fetch(`/properties/${property.id}/favorite-status`)
+            const data = await response.json()
+            setIsFavorited(data.favorited)
+        } catch (error) {
+            console.error('Failed to check favorite status:', error)
+        }
+    }
+
+    const handleToggleFavorite = async () => {
+        if (!user) {
+            toast({
+                title: 'Please Login',
+                description: 'You need to be logged in to save properties.',
+                variant: 'destructive',
+            })
+            router.visit('/login')
+            return
+        }
+
+        setFavoriteLoading(true)
+        try {
+            const response = await fetch(`/properties/${property.id}/favorite`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            const data = await response.json()
+            setIsFavorited(data.favorited)
+            toast({
+                title: data.favorited ? 'Property Saved' : 'Property Removed',
+                description: data.favorited
+                    ? 'This property has been added to your favorites.'
+                    : 'This property has been removed from your favorites.',
+            })
+        } catch (error) {
+            console.error('Failed to toggle favorite:', error)
+            toast({
+                title: 'Error',
+                description: 'Failed to update favorite status.',
+                variant: 'destructive',
+            })
+        } finally {
+            setFavoriteLoading(false)
+        }
     }
 
     const formatPrice = (price: number) => {
         const priceStr = Math.floor(price).toString()
-        if (priceStr.length <= 3) return `$${priceStr}`
-        const formatted = priceStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-        return `$${formatted}`
+        if (priceStr.length <= 3) return `₹${priceStr}`
+        // Format: ₹27,00,000 (Indian numbering system)
+        const formatted = priceStr.replace(/\B(?=(\d{2})+(?!\d))/g, ',')
+        return `₹${formatted}`
     }
 
     return (
@@ -114,7 +186,7 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
                         <div className="lg:col-span-2 rounded-3xl overflow-hidden shadow-xl">
                             {property.mainImage ? (
-                                <img
+                                <img loading="lazy" decoding="async"
                                     src={property.mainImage}
                                     alt={property.title}
                                     className="w-full h-[500px] object-cover"
@@ -128,7 +200,7 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
                         <div className="grid grid-rows-2 gap-4">
                             <div className="rounded-3xl overflow-hidden shadow-xl">
                                 {property.mainImage ? (
-                                    <img
+                                    <img loading="lazy" decoding="async"
                                         src={property.mainImage}
                                         alt={`${property.title} view 2`}
                                         className="w-full h-full object-cover"
@@ -140,7 +212,7 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
                             </div>
                             <div className="rounded-3xl overflow-hidden shadow-xl">
                                 {property.mainImage ? (
-                                    <img
+                                    <img loading="lazy" decoding="async"
                                         src={property.mainImage}
                                         alt={`${property.title} view 3`}
                                         className="w-full h-full object-cover"
@@ -162,10 +234,40 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
                                     }`}
                             >
                                 <div className="mb-8">
-                                    <h1 className="text-5xl font-bold text-black mb-4 capitalize">{property.title}</h1>
+                                    <div className="flex items-start justify-between mb-4">
+                                        <h1 className="text-5xl font-bold text-black capitalize flex-1">{property.title}</h1>
+                                        {user && (
+                                            <button
+                                                onClick={handleToggleFavorite}
+                                                disabled={favoriteLoading}
+                                                className={`ml-4 p-3 rounded-xl transition-all ${
+                                                    isFavorited
+                                                        ? 'bg-red-50 text-red-600'
+                                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                }`}
+                                                title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+                                            >
+                                                <Heart className={`h-6 w-6 ${isFavorited ? 'fill-current' : ''}`} />
+                                            </button>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-2 text-gray-600 mb-6">
                                         <MapPin className="h-5 w-5" />
                                         <span className="text-lg">{propertyDetails.location}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        {property.overallRating && (
+                                            <span className="inline-flex items-center gap-1 text-amber-600 font-semibold">
+                                                <Star className="h-4 w-4 fill-current" />
+                                                {property.overallRating.toFixed(1)} / 5
+                                                {property.ratingCount ? ` (${property.ratingCount})` : ''}
+                                            </span>
+                                        )}
+                                        {property.isPopular && (
+                                            <span className="inline-flex items-center rounded-full bg-rose-100 text-rose-700 px-3 py-1 text-xs font-semibold">
+                                                Popular Property
+                                            </span>
+                                        )}
                                     </div>
                                     <p className="text-4xl font-bold" style={{ color: '#A8D5E2' }}>
                                         {formatPrice(property.price)}
@@ -216,6 +318,45 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
                                 </div>
 
                                 <div className="mb-8">
+                                    <div className="flex items-center justify-between gap-4 mb-6">
+                                        <h2 className="text-3xl font-bold text-black">Property Comments</h2>
+                                        <Link
+                                            href={`/testimonials/share?propertyId=${property.id}`}
+                                            className="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium"
+                                            style={{ backgroundColor: '#A8D5E2', color: '#1a1a1a' }}
+                                        >
+                                            Write a comment
+                                        </Link>
+                                    </div>
+
+                                    {propertyTestimonials.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {propertyTestimonials.map((testimonial) => (
+                                                <div key={testimonial.id} className="bg-gray-50 rounded-2xl p-5">
+                                                    <p className="text-gray-700 leading-relaxed mb-3">
+                                                        &ldquo;{testimonial.content}&rdquo;
+                                                    </p>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <p className="text-sm font-semibold text-black">{testimonial.clientName}</p>
+                                                        {testimonial.rating && (
+                                                            <p className="text-sm text-amber-600 font-medium">
+                                                                {testimonial.rating}/5
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-gray-50 rounded-2xl p-6">
+                                            <p className="text-gray-600">
+                                                No comments for this property yet. Be the first to share your experience.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="mb-8">
                                     <h2 className="text-3xl font-bold text-black mb-6">Property Highlights</h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {propertyDetails.highlights.map((highlight, index) => (
@@ -237,20 +378,50 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
                                                 <p className="font-semibold text-black">{propertyDetails.propertyType}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <Calendar className="h-5 w-5 text-gray-600" />
-                                            <div>
-                                                <p className="text-sm text-gray-600">Year Built</p>
-                                                <p className="font-semibold text-black">{propertyDetails.yearBuilt}</p>
+                                        {property.yearBuilt && (
+                                            <div className="flex items-center gap-3">
+                                                <Calendar className="h-5 w-5 text-gray-600" />
+                                                <div>
+                                                    <p className="text-sm text-gray-600">Year Built</p>
+                                                    <p className="font-semibold text-black">{propertyDetails.yearBuilt}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <MapPin className="h-5 w-5 text-gray-600" />
-                                            <div>
-                                                <p className="text-sm text-gray-600">Parking</p>
-                                                <p className="font-semibold text-black">{propertyDetails.parking}</p>
-                                            </div>
-                                        </div>
+                                        )}
+                                        {/* Display OC and CC if available */}
+                                        {(propertyDetailsFromFeatures.hasOC || propertyDetailsFromFeatures.hasCC) && (
+                                            <>
+                                                {propertyDetailsFromFeatures.hasOC && (
+                                                    <div className="flex items-center gap-3">
+                                                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                                        <div>
+                                                            <p className="text-sm text-gray-600">OC</p>
+                                                            <p className="font-semibold text-green-600">Available</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {propertyDetailsFromFeatures.hasCC && (
+                                                    <div className="flex items-center gap-3">
+                                                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                                        <div>
+                                                            <p className="text-sm text-gray-600">CC</p>
+                                                            <p className="font-semibold text-green-600">Available</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                        {/* Display all other property details from features (excluding OC/CC) */}
+                                        {Object.entries(propertyDetailsFromFeatures)
+                                            .filter(([key]) => key !== 'hasOC' && key !== 'hasCC')
+                                            .map(([key, value]) => (
+                                                <div key={key} className="flex items-center gap-3">
+                                                    <MapPin className="h-5 w-5 text-gray-600" />
+                                                    <div>
+                                                        <p className="text-sm text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                                        <p className="font-semibold text-black">{String(value)}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
                                     </div>
                                 </div>
                             </div>
@@ -336,17 +507,33 @@ export default function PropertyDetail({ property, similarProperties = [] }: Pro
                                         />
                                         {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message}</p>}
                                     </div>
-                                    <Button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="w-full py-6 text-base rounded-xl disabled:opacity-50"
-                                        style={{ backgroundColor: '#A8D5E2', color: '#1a1a1a' }}
-                                    >
-                                        {processing ? 'Sending...' : 'Request Information'}
-                                    </Button>
+                                    <div className="flex gap-3">
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="flex-1 py-6 text-base rounded-xl disabled:opacity-50"
+                                            style={{ backgroundColor: '#A8D5E2', color: '#1a1a1a' }}
+                                        >
+                                            {processing ? 'Sending...' : 'Request Information'}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            onClick={() => {
+                                                const message = `Hi! I'm interested in ${property.title} located at ${property.address}. Price: ₹${property.price.toLocaleString('en-IN')}. Can you provide more details?`
+                                                window.open(createWhatsAppLink(whatsappNumber, message), '_blank', 'noopener,noreferrer')
+                                            }}
+                                            className="px-6 py-6 text-base rounded-xl"
+                                            style={{ backgroundColor: '#25D366', color: '#ffffff' }}
+                                        >
+                                            <MessageCircle className="h-5 w-5" />
+                                        </Button>
+                                    </div>
                                 </form>
                                 <p className="text-xs text-gray-600 text-center mt-4">
                                     Our team will contact you within 24 hours
+                                </p>
+                                <p className="text-xs text-gray-500 text-center mt-2">
+                                    Or chat with us on WhatsApp
                                 </p>
                             </div>
                         </div>

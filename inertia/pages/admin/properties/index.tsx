@@ -15,9 +15,10 @@ interface PropertiesIndexProps {
       total: number
     }
   }
+  newInquiriesCount?: number
 }
 
-export default function PropertiesIndex({ properties }: PropertiesIndexProps) {
+export default function PropertiesIndex({ properties, newInquiriesCount = 0 }: PropertiesIndexProps) {
   const { delete: deleteProperty, processing } = useForm()
   const { flash } = usePage().props as any
 
@@ -36,9 +37,9 @@ export default function PropertiesIndex({ properties }: PropertiesIndexProps) {
   }
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       maximumFractionDigits: 0,
     }).format(price)
   }
@@ -52,6 +53,24 @@ export default function PropertiesIndex({ properties }: PropertiesIndexProps) {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-black">Properties</h1>
           <div className="flex items-center gap-4">
+            <Link
+              href="/admin/contacts"
+              className="relative inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+            >
+              <Eye className="h-5 w-5" />
+              View Inquiries
+              {newInquiriesCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {newInquiriesCount > 9 ? '9+' : newInquiriesCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              href="/admin/testimonials"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+            >
+              Testimonials
+            </Link>
             <Link
               href="/admin/properties/create"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white font-medium transition-colors"
@@ -85,7 +104,9 @@ export default function PropertiesIndex({ properties }: PropertiesIndexProps) {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Location</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Price</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Rating</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Featured</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Popular</th>
                   <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
@@ -107,7 +128,11 @@ export default function PropertiesIndex({ properties }: PropertiesIndexProps) {
                         )}
                         <div>
                           <p className="font-semibold text-black">{property.title}</p>
-                          <p className="text-sm text-gray-600 capitalize">{property.propertyType}</p>
+                          <p className="text-sm text-gray-600 capitalize">
+                            {property.propertyType === 'other' && property.propertyTypeOther 
+                              ? property.propertyTypeOther 
+                              : property.propertyType}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -122,17 +147,31 @@ export default function PropertiesIndex({ properties }: PropertiesIndexProps) {
                         className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize ${
                           property.status === 'for_sale'
                             ? 'bg-green-100 text-green-800'
-                            : property.status === 'sold'
-                              ? 'bg-gray-100 text-gray-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                            : property.status === 'rental'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
                         }`}
                       >
                         {property.status.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-6 py-4">
+                      {property.rating !== null && property.rating !== undefined ? (
+                        <span className="text-sm font-semibold text-amber-600">{Number(property.rating).toFixed(1)}/5</span>
+                      ) : (
+                        <span className="text-sm text-gray-400">N/A</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
                       {property.featured ? (
                         <span className="text-sm text-gray-700">Yes</span>
+                      ) : (
+                        <span className="text-sm text-gray-400">No</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {property.isPopular ? (
+                        <span className="text-sm text-rose-600 font-medium">Yes</span>
                       ) : (
                         <span className="text-sm text-gray-400">No</span>
                       )}

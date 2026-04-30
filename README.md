@@ -7,7 +7,7 @@ A standalone real estate website built with AdonisJS 6, Inertia.js, and React.
 ### 1. Install Dependencies
 
 ```bash
-cd real-estate-website
+cd dad-gift
 pnpm install
 ```
 
@@ -33,6 +33,20 @@ DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=your_password
 DB_DATABASE=real_estate_db
+
+# WhatsApp (optional - for click-to-chat functionality)
+# Format: +919876543210 (include country code)
+WHATSAPP_NUMBER=+919876543210
+
+# Email Configuration (for admin notifications)
+# SMTP settings for sending email notifications
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+MAIL_FROM_ADDRESS=noreply@realest.com
+MAIL_FROM_NAME=Realest
+ADMIN_EMAIL=admin@realest.com
 ```
 
 ### 3. Create the Database

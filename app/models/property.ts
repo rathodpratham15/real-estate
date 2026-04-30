@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, belongsTo, manyToMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, ManyToMany } from '@adonisjs/lucid/types/relations'
 import Agent from '#models/agent'
 import User from '#models/user'
 
@@ -41,10 +41,19 @@ export default class Property extends BaseModel {
   declare country: string
 
   @column()
+  declare latitude: number | null
+
+  @column()
+  declare longitude: number | null
+
+  @column()
   declare price: number
 
   @column({ columnName: 'property_type' })
-  declare propertyType: 'house' | 'apartment' | 'condo' | 'townhouse' | 'land' | 'commercial'
+  declare propertyType: 'house' | 'shop' | 'godown' | 'land' | 'commercial' | 'other'
+
+  @column({ columnName: 'property_type_other' })
+  declare propertyTypeOther: string | null
 
   @column()
   declare bedrooms: number | null
@@ -59,10 +68,16 @@ export default class Property extends BaseModel {
   declare yearBuilt: number | null
 
   @column()
-  declare status: 'for_sale' | 'sold' | 'pending' | 'off_market'
+  declare status: 'for_sale' | 'rental'
 
   @column()
   declare featured: boolean
+
+  @column()
+  declare rating: number | null
+
+  @column({ columnName: 'is_popular' })
+  declare isPopular: boolean
 
   @column({ columnName: 'main_image' })
   declare mainImage: string | null
@@ -83,6 +98,22 @@ export default class Property extends BaseModel {
   })
   declare images: string[]
 
+  @column({
+    prepare: (value: string[] | null) => (value ? JSON.stringify(value) : null),
+    consume: (value: string | null) => {
+      if (!value) return []
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value)
+        } catch {
+          return []
+        }
+      }
+      return value
+    },
+  })
+  declare videos: string[]
+
   @column({ columnName: 'agent_id' })
   declare agentId: number | null
 
@@ -90,6 +121,13 @@ export default class Property extends BaseModel {
     foreignKey: 'agentId',
   })
   declare agent: BelongsTo<typeof Agent>
+
+  @manyToMany(() => User, {
+    pivotTable: 'property_user',
+    pivotForeignKey: 'property_id',
+    pivotRelatedForeignKey: 'user_id',
+  })
+  declare favoritedBy: ManyToMany<typeof User>
 
   @column({
     prepare: (value: Record<string, any> | null) => (value ? JSON.stringify(value) : null),
