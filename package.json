@@ -12,7 +12,9 @@
     "migrate:fresh": "node ace migration:fresh",
     "test": "node ace test",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "web:dev": "pnpm --filter vercel-web dev",
+    "web:build": "pnpm --filter vercel-web build"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
