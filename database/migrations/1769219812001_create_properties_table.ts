@@ -13,7 +13,7 @@ export default class extends BaseSchema {
       table.string('city').notNullable()
       table.string('state').notNullable()
       table.string('zip_code').notNullable()
-      table.string('country').notNullable().defaultTo('US')
+      table.string('country').notNullable().defaultTo('IN')
       table.decimal('price', 12, 2).notNullable()
       table.enum('property_type', ['house', 'apartment', 'condo', 'townhouse', 'land', 'commercial']).notNullable()
       table.integer('bedrooms').nullable()

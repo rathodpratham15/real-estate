@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
+import { User, LogOut, LogIn } from 'lucide-react'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [currentPath, setCurrentPath] = useState('')
+  const { auth } = usePage().props as any
+  const user = auth?.user
 
   useEffect(() => {
     setCurrentPath(window.location.pathname)
@@ -25,6 +28,15 @@ export default function Navbar() {
           Realest
         </Link>
         <div className="flex items-center gap-8">
+          <Link
+            href="/"
+            className={`nav-link text-sm font-medium transition-all duration-300 hover:opacity-70 ${
+              currentPath === '/' ? 'font-bold' : ''
+            }`}
+            style={{ color: '#1a1a1a' }}
+          >
+            Home
+          </Link>
           <Link
             href="/listings"
             className={`nav-link text-sm font-medium transition-all duration-300 hover:opacity-70 ${
@@ -52,6 +64,40 @@ export default function Navbar() {
           >
             Contact
           </Link>
+          
+          {user ? (
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 text-sm font-medium transition-all duration-300 hover:opacity-70"
+                style={{ color: '#1a1a1a' }}
+              >
+                <User className="h-4 w-4" />
+                {user.firstName}
+              </Link>
+              <form method="POST" action="/logout" className="inline">
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 text-sm font-medium transition-all duration-300 hover:opacity-70"
+                  style={{ color: '#1a1a1a' }}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Link
+                href="/login"
+                className="flex items-center gap-2 text-sm font-medium transition-all duration-300 hover:opacity-70"
+                style={{ color: '#1a1a1a' }}
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </nav>

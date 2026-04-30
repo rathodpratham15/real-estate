@@ -17,4 +17,19 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_USER: Env.schema.string(),
   DB_PASSWORD: Env.schema.string(),
   DB_DATABASE: Env.schema.string(),
+  
+  // WhatsApp (optional)
+  WHATSAPP_NUMBER: Env.schema.string.optional(),
+  GOOGLE_MAPS_API_KEY: Env.schema.string.optional(),
+  DEFAULT_MAP_LATITUDE: Env.schema.number.optional(),
+  DEFAULT_MAP_LONGITUDE: Env.schema.number.optional(),
+  
+  // Email configuration
+  SMTP_HOST: Env.schema.string.optional(),
+  SMTP_PORT: Env.schema.number.optional(),
+  SMTP_USER: Env.schema.string.optional(),
+  SMTP_PASSWORD: Env.schema.string.optional(),
+  MAIL_FROM_ADDRESS: Env.schema.string.optional(),
+  MAIL_FROM_NAME: Env.schema.string.optional(),
+  ADMIN_EMAIL: Env.schema.string.optional(),
 })
