@@ -48,7 +48,7 @@ export default class PropertiesController {
      * Store new property
      */
     async store({ request, response, session, auth }: HttpContext) {
-        const user = await auth.use('web').authenticate()
+        const user = await (auth as any).use('web').authenticate()
 
         // Handle file uploads
         const uploadsDir = app.publicPath('uploads')
@@ -164,7 +164,7 @@ export default class PropertiesController {
     /**
      * Show edit property form
      */
-    async edit({ params, inertia, response }: HttpContext) {
+    async edit({ params, inertia }: HttpContext) {
         const property = await Property.findOrFail(params.id)
 
         return inertia.render('admin/properties/edit', {
