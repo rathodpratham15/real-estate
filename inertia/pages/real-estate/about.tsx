@@ -106,7 +106,7 @@ export default function AboutPage({ agents, testimonials }: AboutPageProps) {
                   <div key={agent.id} className="bg-white border border-slate-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <div className="flex items-center gap-4 mb-4">
                       {agent.photo ? (
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={agent.photo}
                           alt={`${agent.firstName} ${agent.lastName}`}
                           className="w-20 h-20 rounded-full object-cover"

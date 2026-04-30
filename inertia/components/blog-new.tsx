@@ -43,7 +43,7 @@ export default function Blog({ posts }: BlogProps) {
             >
               <div className="relative overflow-hidden rounded-3xl mb-4 aspect-[3/2]">
                 {featuredPost.featuredImage ? (
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={featuredPost.featuredImage}
                     alt={featuredPost.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -71,7 +71,7 @@ export default function Blog({ posts }: BlogProps) {
                 {featuredPost.author && (
                   <div className="flex items-center gap-3">
                     {featuredPost.author.photo ? (
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={featuredPost.author.photo}
                         alt={`${featuredPost.author.firstName} ${featuredPost.author.lastName}`}
                         className="w-10 h-10 rounded-full object-cover"
@@ -104,7 +104,7 @@ export default function Blog({ posts }: BlogProps) {
               >
                 <div className="relative overflow-hidden rounded-2xl w-32 h-32 flex-shrink-0">
                   {post.featuredImage ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={post.featuredImage}
                       alt={post.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

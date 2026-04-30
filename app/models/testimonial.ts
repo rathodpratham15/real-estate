@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import Property from '#models/property'
 
 export default class Testimonial extends BaseModel {
   @column({ isPrimary: true })
@@ -19,6 +21,14 @@ export default class Testimonial extends BaseModel {
 
   @column({ columnName: 'property_type' })
   declare propertyType: string | null
+
+  @column({ columnName: 'property_id' })
+  declare propertyId: number | null
+
+  @belongsTo(() => Property, {
+    foreignKey: 'propertyId',
+  })
+  declare property: BelongsTo<typeof Property>
 
   @column()
   declare featured: boolean

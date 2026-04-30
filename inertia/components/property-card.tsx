@@ -8,13 +8,13 @@ interface PropertyCardProps {
 
 export default function PropertyCard({ property }: PropertyCardProps) {
   const formatPrice = (price: number) => {
-    // Format as $270.000 (European style with dots, no thousands separator)
+    // Format as ₹27,00,000 (Indian numbering system with lakhs and crores)
     const priceStr = Math.floor(price).toString()
-    if (priceStr.length <= 3) return `$${priceStr}`
+    if (priceStr.length <= 3) return `₹${priceStr}`
     
-    // Format: $270.000 (dot as thousands separator)
-    const formatted = priceStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-    return `$${formatted}`
+    // Format: ₹27,00,000 (Indian numbering system)
+    const formatted = priceStr.replace(/\B(?=(\d{2})+(?!\d))/g, ',')
+    return `₹${formatted}`
   }
 
   const formatSquareFeet = (sqft: number | null) => {

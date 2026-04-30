@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link } from '@inertiajs/react'
 import type { Property } from '@/lib/real-estate-types'
-import { Bed, Bath, Maximize, ArrowRight } from 'lucide-react'
+import { Bed, Bath, Maximize, ArrowRight, Star } from 'lucide-react'
 import { Button } from './ui/button'
 
 interface ListingsProps {
@@ -74,7 +74,7 @@ export default function Listings({ properties }: ListingsProps) {
             >
               <div className="relative overflow-hidden rounded-3xl mb-4 aspect-[4/3]">
                 {property.mainImage ? (
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={property.mainImage}
                     alt={property.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -85,11 +85,23 @@ export default function Listings({ properties }: ListingsProps) {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                {property.isPopular && (
+                  <div className="absolute top-4 left-4 bg-rose-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    Popular
+                  </div>
+                )}
               </div>
               <div className="px-2">
                 <h3 className="text-xl font-semibold text-black mb-2 capitalize">{property.title}</h3>
+                {property.overallRating && (
+                  <p className="text-sm font-medium text-amber-600 mb-1 inline-flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-current" />
+                    {property.overallRating.toFixed(1)} / 5
+                    {property.ratingCount ? ` (${property.ratingCount})` : ''}
+                  </p>
+                )}
                 <p className="text-2xl font-bold text-black mb-3">
-                  ${Math.floor(property.price).toLocaleString('en-US')}
+                  ₹{Math.floor(property.price).toLocaleString('en-IN')}
                 </p>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   {property.bedrooms && (

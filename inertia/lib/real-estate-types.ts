@@ -10,14 +10,22 @@ export interface Property {
   state: string
   zipCode: string
   country: string
+  latitude: number | null
+  longitude: number | null
   price: number
-  propertyType: 'house' | 'apartment' | 'condo' | 'townhouse' | 'land' | 'commercial'
+  propertyType: 'house' | 'shop' | 'godown' | 'land' | 'commercial' | 'other'
+  propertyTypeOther?: string | null
   bedrooms: number | null
   bathrooms: number | null
   squareFeet: number | null
   yearBuilt: number | null
-  status: 'for_sale' | 'sold' | 'pending' | 'off_market'
+  status: 'for_sale' | 'rental'
   featured: boolean
+  rating: number | null
+  isPopular: boolean
+  overallRating?: number | null
+  ratingCount?: number
+  distanceKm?: number | null
   mainImage: string | null
   images: string[]
   agentId: number | null
@@ -68,6 +76,12 @@ export interface Testimonial {
   content: string
   rating: number | null
   propertyType: string | null
+  propertyId: number | null
+  property?: {
+    id: number
+    title: string
+    slug: string
+  } | null
   featured: boolean
   order: number
   createdAt: DateTime

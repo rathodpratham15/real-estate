@@ -38,7 +38,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
         {/* Hero Image */}
         {post.featuredImage && (
           <div className="relative h-[400px] md:h-[500px] bg-gray-200">
-            <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" src={post.featuredImage} alt={post.title} className="w-full h-full object-cover" />
           </div>
         )}
 
@@ -122,7 +122,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
               >
                 <div className="flex items-start gap-4">
                   {post.author.photo ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={post.author.photo}
                       alt={`${post.author.firstName} ${post.author.lastName}`}
                       className="w-20 h-20 rounded-full object-cover"

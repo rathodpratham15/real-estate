@@ -12,6 +12,7 @@
       "#models/*": ["./app/models/*"],
       "#exceptions/*": ["./app/exceptions/*"],
       "#middleware/*": ["./app/middleware/*"],
+      "#services/*": ["./app/services/*"],
       "#start/*": ["./start/*"],
       "#config/*": ["./config/*"],
       "#database/*": ["./database/*"],

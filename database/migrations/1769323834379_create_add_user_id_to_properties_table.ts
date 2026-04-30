@@ -4,10 +4,11 @@ export default class extends BaseSchema {
   protected tableName = 'properties'
 
   async up() {
-    this.schema.alterTable(this.tableName, (table) => {
-      table.integer('user_id').unsigned().nullable()
-      table.foreign('user_id').references('id').inTable('users').onDelete('SET NULL')
-      table.index(['user_id'])
+    this.schema.createTable(this.tableName, (table) => {
+      table.increments('id')
+
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
     })
   }
 

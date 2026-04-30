@@ -2,16 +2,18 @@ import { Head, useForm } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/navbar-new'
 import Footer from '@/components/footer-new'
-import { MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import type { Agent } from '@/lib/real-estate-types'
+import { createWhatsAppLink } from '@/lib/whatsapp'
 
 interface ContactPageProps {
     agents: Agent[]
+    whatsappNumber?: string
 }
 
-export default function ContactPage({ agents }: ContactPageProps) {
+export default function ContactPage({ agents, whatsappNumber = '+919876543210' }: ContactPageProps) {
     const [isVisible, setIsVisible] = useState(false)
     const { toast } = useToast()
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -26,9 +28,19 @@ export default function ContactPage({ agents }: ContactPageProps) {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             window.scrollTo(0, 0)
+            const params = new URLSearchParams(window.location.search)
+            const intent = params.get('intent')
+
+            if (intent === 'sell') {
+                setData('subject', 'I want to sell my property')
+                setData(
+                    'message',
+                    "Hi Realest team, I want to list my property for sale. Please contact me with the next steps, required documents, and estimated timeline."
+                )
+            }
         }
         setTimeout(() => setIsVisible(true), 100)
-    }, [])
+    }, [setData])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -53,22 +65,22 @@ export default function ContactPage({ agents }: ContactPageProps) {
         {
             icon: MapPin,
             title: 'Visit Us',
-            details: ['123 Real Estate Boulevard', 'Suite 400', 'City, State 12345'],
+            details: ['Shop No.3', 'Shree Ganesh Real Estate Consultants', 'Below Casa Pieadade Building', 'Opposite Shiv Sena Shaka', 'Charai, Thane West, 400601'],
         },
         {
             icon: Phone,
             title: 'Call Us',
-            details: ['+1 (555) 123-4567', '+1 (555) 987-6543'],
+            details: ['+91 9820145764'],
         },
         {
             icon: Mail,
             title: 'Email Us',
-            details: ['info@realest.com', 'support@realest.com'],
+            details: ['shreeganes909@gmail.com', 'shreeganes009@rediffmail.com'],
         },
         {
             icon: Clock,
             title: 'Business Hours',
-            details: ['Monday - Friday: 9AM - 6PM', 'Saturday: 10AM - 4PM', 'Sunday: Closed'],
+            details: ['Monday - Sunday: 11AM - 8PM'],
         },
     ]
 
@@ -155,7 +167,7 @@ export default function ContactPage({ agents }: ContactPageProps) {
                                         onChange={(e) => setData('name', e.target.value)}
                                         required
                                         className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black transition-colors"
-                                        placeholder="John Doe"
+                                        placeholder="Deepak Rathod"
                                     />
                                     {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                                 </div>
@@ -172,7 +184,7 @@ export default function ContactPage({ agents }: ContactPageProps) {
                                             onChange={(e) => setData('email', e.target.value)}
                                             required
                                             className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black transition-colors"
-                                            placeholder="john@example.com"
+                                            placeholder="shreeganes909@gmail.com"
                                         />
                                         {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                                     </div>
@@ -186,7 +198,7 @@ export default function ContactPage({ agents }: ContactPageProps) {
                                             value={data.phone}
                                             onChange={(e) => setData('phone', e.target.value)}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black transition-colors"
-                                            placeholder="+1 (555) 123-4567"
+                                            placeholder="+91 9820145764"
                                         />
                                         {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
                                     </div>
@@ -224,14 +236,27 @@ export default function ContactPage({ agents }: ContactPageProps) {
                                     {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message}</p>}
                                 </div>
 
-                                <Button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="w-full py-6 text-base rounded-xl disabled:opacity-50"
-                                    style={{ backgroundColor: '#A8D5E2', color: '#1a1a1a' }}
-                                >
-                                    {processing ? 'Sending...' : 'Send Message'}
-                                </Button>
+                                <div className="flex gap-3">
+                                    <Button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="flex-1 py-6 text-base rounded-xl disabled:opacity-50"
+                                        style={{ backgroundColor: '#A8D5E2', color: '#1a1a1a' }}
+                                    >
+                                        {processing ? 'Sending...' : 'Send Message'}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={() => {
+                                            const message = `Hi! ${data.subject ? `Subject: ${data.subject}\n\n` : ''}${data.message || 'I would like to get in touch with you.'}`
+                                            window.open(createWhatsAppLink(whatsappNumber, message), '_blank', 'noopener,noreferrer')
+                                        }}
+                                        className="px-6 py-6 text-base rounded-xl"
+                                        style={{ backgroundColor: '#25D366', color: '#ffffff' }}
+                                    >
+                                        <MessageCircle className="h-5 w-5" />
+                                    </Button>
+                                </div>
                             </form>
                         </div>
 
@@ -241,7 +266,7 @@ export default function ContactPage({ agents }: ContactPageProps) {
                         >
                             <div className="bg-gray-50 rounded-3xl overflow-hidden h-full min-h-[600px]">
                                 <iframe
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d387193.30596073366!2d-74.25986548248684!3d40.69714941932609!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1234567890123!5m2!1sen!2s"
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3767.9626860883714!2d72.97209297545855!3d19.19683204816771!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7b923445f6d2f%3A0xb38dbacbdf3bc1aa!2sCasa%20Piedade%2C%20Opp.%20Shivsena%20Shakha%2C%20Charai%2C%20Thane%20West%2C%20Thane%2C%20Maharashtra%20400601%2C%20India!5e0!3m2!1sen!2sus!4v1735378472484!5m2!1sen!2sus"
                                     width="100%"
                                     height="100%"
                                     style={{ border: 0 }}
