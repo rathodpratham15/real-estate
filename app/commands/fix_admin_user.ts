@@ -59,7 +59,7 @@ export default class FixAdminUser extends BaseCommand {
           this.logger.success('Password updated!')
 
           // Test again
-          await User.verifyCredentials(email, password)
+          const verified2 = await User.verifyCredentials(email, password)
           this.logger.success('Password verification successful after update!')
         } else {
           this.logger.error('Password hash is valid but verifyCredentials still fails. This might be a configuration issue.')

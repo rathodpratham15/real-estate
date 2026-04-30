@@ -7,7 +7,7 @@ A standalone real estate website built with AdonisJS 6, Inertia.js, and React.
 ### 1. Install Dependencies
 
 ```bash
-cd dad-gift
+cd real-estate-website
 pnpm install
 ```
 

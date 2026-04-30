@@ -1,8 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
+  "framework": "vite",
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm --filter vercel-web build",
-  "devCommand": "pnpm --filter vercel-web dev",
-  "outputDirectory": "apps/vercel-web/.next"
+  "buildCommand": "pnpm vercel-build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

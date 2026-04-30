@@ -2,8 +2,7 @@
   "extends": "@adonisjs/tsconfig/tsconfig.app.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "types": ["react", "node", "vite/client"],
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["react"],
     "rootDir": "./",
     "outDir": "./build",
     "baseUrl": ".",
