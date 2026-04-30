@@ -1,8 +1,8 @@
 {
   "/_not-found/page": "/_not-found",
   "/about/page": "/about",
-  "/contact/page": "/contact",
   "/listings/[slug]/page": "/listings/[slug]",
+  "/page": "/",
   "/listings/page": "/listings",
-  "/page": "/"
+  "/contact/page": "/contact"
 }
