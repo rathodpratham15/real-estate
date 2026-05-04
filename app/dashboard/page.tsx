@@ -13,6 +13,9 @@ export default async function DashboardPage() {
   if (!session?.user?.id) {
     redirect('/login')
   }
+  if ((session.user as any).role === 'admin') {
+    redirect('/admin/properties')
+  }
 
   const userId = parseInt(session.user.id)
   const userInfo = {

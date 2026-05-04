@@ -9,10 +9,12 @@ import { AuthError } from 'next-auth'
 export async function loginAction(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
-  const callbackUrl = (formData.get('callbackUrl') as string) || '/dashboard'
+
+  const user = await prisma.user.findUnique({ where: { email }, select: { role: true } })
+  const redirectTo = user?.role === 'admin' ? '/admin/properties' : '/dashboard'
 
   try {
-    await signIn('credentials', { email, password, redirectTo: callbackUrl })
+    await signIn('credentials', { email, password, redirectTo })
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: 'Invalid email or password.' }
